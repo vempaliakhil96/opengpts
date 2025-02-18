@@ -20,6 +20,7 @@ from app.llms import (
     get_ollama_llm,
     get_openai_llm,
 )
+from app.atlassian_llms import get_atlassian_llm, AtlassianModelProvider
 from app.retrieval import get_retrieval_executor
 from app.tools import (
     RETRIEVAL_DESCRIPTION,
@@ -68,7 +69,9 @@ class AgentType(str, Enum):
     BEDROCK_CLAUDE2 = "Claude 2 (Amazon Bedrock)"
     GEMINI = "GEMINI"
     OLLAMA = "Ollama"
-
+    ATLASSIAN_GPT_4O = "Atlassian GPT 4o"
+    ATLASSIAN_GPT_O1 = "Atlassian GPT o1"
+    ATLASSIAN_GPT_O3_MINI = "Atlassian GPT o3 mini"
 
 DEFAULT_SYSTEM_MESSAGE = "You are a helpful assistant."
 
@@ -116,8 +119,18 @@ def get_agent_executor(
         return get_tools_agent_executor(
             tools, llm, system_message, interrupt_before_action, CHECKPOINTER
         )
-    elif agent == AgentType.OLLAMA:
-        llm = get_ollama_llm()
+    elif agent == AgentType.ATLASSIAN_GPT_4O:
+        llm = get_atlassian_llm(model="gpt-4o-latest", model_provider=AtlassianModelProvider.OPENAI)
+        return get_tools_agent_executor(
+            tools, llm, system_message, interrupt_before_action, CHECKPOINTER
+        )
+    elif agent == AgentType.ATLASSIAN_GPT_O1:
+        llm = get_atlassian_llm(model="o1-latest", model_provider=AtlassianModelProvider.OPENAI)
+        return get_tools_agent_executor(
+            tools, llm, system_message, interrupt_before_action, CHECKPOINTER
+        )
+    elif agent == AgentType.ATLASSIAN_GPT_O3_MINI:
+        llm = get_atlassian_llm(model="o3-mini-latest", model_provider=AtlassianModelProvider.OPENAI)
         return get_tools_agent_executor(
             tools, llm, system_message, interrupt_before_action, CHECKPOINTER
         )
@@ -192,6 +205,9 @@ class LLMType(str, Enum):
     GEMINI = "GEMINI"
     MIXTRAL = "Mixtral"
     OLLAMA = "Ollama"
+    ATLASSIAN_GPT_4O = "Atlassian GPT 4o"
+    ATLASSIAN_GPT_O1 = "Atlassian GPT o1"
+    ATLASSIAN_GPT_O3_MINI = "Atlassian GPT o3 mini"
 
 
 def get_chatbot(
@@ -216,6 +232,12 @@ def get_chatbot(
         llm = get_mixtral_fireworks()
     elif llm_type == LLMType.OLLAMA:
         llm = get_ollama_llm()
+    elif llm_type == LLMType.ATLASSIAN_GPT_4O:
+        llm = get_atlassian_llm(model="gpt-4o-latest", model_provider=AtlassianModelProvider.OPENAI)
+    elif llm_type == LLMType.ATLASSIAN_GPT_O1:
+        llm = get_atlassian_llm(model="o1-latest", model_provider=AtlassianModelProvider.OPENAI)
+    elif llm_type == LLMType.ATLASSIAN_GPT_O3_MINI:
+        llm = get_atlassian_llm(model="o3-mini-latest", model_provider=AtlassianModelProvider.OPENAI)
     else:
         raise ValueError("Unexpected llm type")
     return get_chatbot_executor(llm, system_message, CHECKPOINTER)
